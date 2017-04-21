@@ -1,0 +1,15 @@
+*.pyc
+*.npy
+*.png
+*.gif
+*.gz
+
+# Latex files
+*.aux
+*.log
+*.out
+*.toc
+*.run.xml
+*.bcf
+.DS_Store
+tfgpu

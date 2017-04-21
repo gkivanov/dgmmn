@@ -1,0 +1,76 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<body>
+<div style="text-align: center; position: relative; width: 100%; height: 240px; margin-top: 50px;">
+    <h5 id="filepath">
+        filepath
+    </h5>
+    <img id="barimg" width="200" height="200" src="none" />
+</div>
+<div style="text-align: center; position: relative; width: 100%; height: 40px;">
+    <button onclick="vote(1)" type="button" style="margin-right: 50px;" class="btn btn-success">Good</button>
+    <button onclick="vote(0)" type="button" class="btn btn-danger">Bad</button>
+</div>
+<div style="text-align: center; position: relative; width: 100%; height: 20px;">
+    <button id="revertBtn" onclick="revert()" type="button" class="btn btn-info">Revert</button>
+</div>
+
+<script>
+    var prev_img_path = "";
+    var prev_sav_path = "";
+
+    function httpGet(theUrl)
+    {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+
+    function loadImg(response) {
+        var b64image = response['b64image'];
+        var filepath = response['filepath'];
+
+        var image = new Image();
+        document.getElementById("filepath").innerHTML = filepath;
+        document.getElementById("barimg").src = 'data:image/png;base64,' + b64image;
+    }
+
+    function newImg() {
+        var response = JSON.parse(httpGet("/poll"));
+        loadImg(response);
+    }
+
+    function vote(vote) {
+        var fname = document.getElementById("filepath").innerHTML;
+
+        var url = "/vote?fname=" + encodeURIComponent(fname) + "&vote=" + vote;
+        var response = JSON.parse(httpGet(url));
+
+        prev_img_path = fname;
+        prev_sav_path = response['path'];
+
+        // enable revert button
+        document.getElementById("revertBtn").disabled = false;
+
+        newImg();
+    }
+
+    function revert() {
+        var fname = document.getElementById("filepath").innerHTML;
+
+        var url = "/revert?savepath=" + encodeURIComponent(prev_sav_path) + "&imgpath=" + encodeURIComponent(prev_img_path) + "&nxtimg=" + encodeURI(fname);
+        var response = JSON.parse(httpGet(url));
+
+        document.getElementById("revertBtn").disabled = true;
+
+        loadImg(response);
+    }
+
+    document.getElementById("revertBtn").disabled = true;
+    newImg();
+</script>
+</body>
+</html>
